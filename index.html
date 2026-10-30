@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="はい・いいえで答えるだけで、今の自分に合う小さな行動と、物事を分けて考える練習ミッションが見つかるサイト。">
+<title>しくみ分解ラボ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1+Code:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+
+/* Layout: 方眼紙の作業台。ミッションは「部品トレイ → 仕分け箱」に分けて置く、分解図の世界観 */
+:root{
+  --paper:#EEF2F4; --sheet:#FFFFFF; --ink:#16212C; --muted:#56636F; --line:#CDD6DD; --grid:rgba(22,33,44,.07);
+  --accent:#FFC21A; --accent-ink:#16212C;
+  --c1:#13806F; --c2:#C94F3B; --c3:#5B4FC4; --c4:#9A6A00;
+  --c1-bg:#E1F2EE; --c2-bg:#F8E6E2; --c3-bg:#E9E7FA; --c4-bg:#F6EED9;
+  --ok:#1D7F46; --ng:#C23B26; --ok-bg:#E2F3E8; --ng-bg:#FBE5E1;
+  --f-display:"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
+  --f-mono:"M PLUS 1 Code",ui-monospace,"Menlo",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0F161D; --sheet:#17212B; --ink:#E6EDF2; --muted:#9AA8B4; --line:#2B3946; --grid:rgba(230,237,242,.05);
+  --accent:#FFC21A; --accent-ink:#16212C;
+  --c1:#4CC3AE; --c2:#F08A74; --c3:#A79CFF; --c4:#E2B44A;
+  --c1-bg:#15302C; --c2-bg:#3A221D; --c3-bg:#25223F; --c4-bg:#33291A;
+  --ok:#5BD08A; --ng:#FF8A73; --ok-bg:#163223; --ng-bg:#3A1F1A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0F161D; --sheet:#17212B; --ink:#E6EDF2; --muted:#9AA8B4; --line:#2B3946; --grid:rgba(230,237,242,.05);
+  --accent:#FFC21A; --accent-ink:#16212C;
+  --c1:#4CC3AE; --c2:#F08A74; --c3:#A79CFF; --c4:#E2B44A;
+  --c1-bg:#15302C; --c2-bg:#3A221D; --c3-bg:#25223F; --c4-bg:#33291A;
+  --ok:#5BD08A; --ng:#FF8A73; --ok-bg:#163223; --ng-bg:#3A1F1A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.chip:focus-visible,.bin:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.label{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted);font-weight:700}
+
+/* top bar */
+.top{padding-block:14px}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{font-family:var(--f-display);font-size:20px;letter-spacing:.02em;background:none;border:0;padding:0;display:flex;align-items:center;gap:8px}
+.logo i{display:inline-grid;place-items:center;width:28px;height:28px;background:var(--accent);color:var(--accent-ink);border-radius:6px;font-style:normal;font-size:15px}
+.rank{display:flex;align-items:center;gap:8px;background:var(--sheet);border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 6px;font-size:13px}
+.rank b{font-family:var(--f-mono);background:var(--ink);color:var(--paper);border-radius:999px;padding:1px 8px;font-size:12px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center;padding-block:28px 36px}
+.hero > div{min-width:0}
+.hero h1{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,6.4vw,46px);line-height:1.3;margin-top:8px}
+.hero h1 mark{background:linear-gradient(transparent 58%,var(--accent) 58%);color:inherit;padding:0 2px}
+.hero p.lead{margin-top:14px;color:var(--muted);max-width:30em}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn{border:2px solid var(--ink);background:var(--sheet);border-radius:10px;padding:10px 18px;font-weight:700;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent-ink);box-shadow:3px 3px 0 var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:3px 3px 0 var(--ink)}
+.diagram{width:100%;max-width:320px;justify-self:center}
+.diagram .t{font-family:var(--f-body);font-weight:700;font-size:13px;fill:var(--ink)}
+.diagram .s{font-family:var(--f-mono);font-size:10px;fill:var(--muted)}
+.diagram .core{fill:var(--sheet);stroke:var(--ink);stroke-width:2}
+.diagram .lead-line{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 4;fill:none}
+.diagram .p1{fill:var(--c1-bg);stroke:var(--c1);stroke-width:2}
+.diagram .p2{fill:var(--c2-bg);stroke:var(--c2);stroke-width:2}
+.diagram .p3{fill:var(--c3-bg);stroke:var(--c3);stroke-width:2}
+
+/* sections */
+section.block{padding-block:28px;border-top:2px solid var(--ink)}
+section.block h2{font-family:var(--f-display);font-weight:400;font-size:24px;margin-top:4px}
+section.block .sub{color:var(--muted);margin-top:6px}
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.tool{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tool h3{font-size:18px;display:flex;align-items:baseline;gap:8px}
+.tool h3 span{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tool p{font-size:14px}
+.tool .use{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin-top:auto}
+.tool .use b{color:var(--ink)}
+
+/* map */
+.level{margin-top:22px}
+.level-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.level-head .lv{font-family:var(--f-mono);font-weight:700;background:var(--ink);color:var(--paper);border-radius:6px;padding:1px 8px;font-size:13px}
+.level-head h3{font-size:19px}
+.level-head p{color:var(--muted);font-size:14px;width:100%}
+.missions{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+.mcard{text-align:left;background:var(--sheet);border:2px solid var(--ink);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s;min-width:0}
+.mcard:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.mcard .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mcard strong{font-size:17px}
+.mcard .desc{font-size:14px;color:var(--muted)}
+.stars{font-family:var(--f-mono);letter-spacing:2px;color:var(--line);font-size:15px;white-space:nowrap}
+.stars .on{color:var(--accent)}
+.tag{font-family:var(--f-mono);font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:4px;padding:0 6px;color:var(--muted)}
+
+.note{font-size:13px;color:var(--muted);padding-block:24px 40px;border-top:1px solid var(--line);margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.note a{color:inherit}
+
+/* play */
+.play{padding-block:8px 48px}
+.back{background:none;border:0;padding:4px 0;color:var(--muted);font-size:14px}
+.play-head{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.play-head h2{font-family:var(--f-display);font-weight:400;font-size:26px;line-height:1.35}
+.scene{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px;font-size:15px}
+.scene b{background:linear-gradient(transparent 60%,var(--accent) 60%)}
+.howto{font-size:13px;color:var(--muted);margin-top:12px}
+.tray{margin-top:10px;background:var(--sheet);border:2px dashed var(--line);border-radius:12px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;min-height:64px}
+.tray:empty::before{content:"部品はすべて箱に入りました";color:var(--muted);font-size:14px;align-self:center}
+.chip{background:var(--paper);border:1.5px solid var(--ink);border-radius:8px;padding:6px 10px;font-size:14px;line-height:1.5;text-align:left;max-width:100%}
+.chip.sel{background:var(--accent);color:var(--accent-ink);border-color:var(--accent-ink);box-shadow:2px 2px 0 var(--ink)}
+.chip.ok{border-color:var(--ok);background:var(--ok-bg)}
+.chip.ng{border-color:var(--ng);background:var(--ng-bg)}
+.chip .mk{font-family:var(--f-mono);font-weight:700;margin-right:4px}
+.chip.ok .mk{color:var(--ok)} .chip.ng .mk{color:var(--ng)}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:14px}
+.bin{background:var(--sheet);border:2px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:120px;text-align:left;min-width:0}
+.bin.ready{border-color:var(--ink);border-style:dashed}
+.bin .bl{display:inline-flex;align-self:flex-start;font-weight:700;font-size:14px;border-radius:6px;padding:2px 10px}
+.bin .bh{font-size:12px;color:var(--muted);line-height:1.5}
+.bin .in{display:flex;flex-direction:column;gap:6px}
+.k1 .bl{background:var(--c1-bg);color:var(--c1)} .k2 .bl{background:var(--c2-bg);color:var(--c2)}
+.k3 .bl{background:var(--c3-bg);color:var(--c3)} .k4 .bl{background:var(--c4-bg);color:var(--c4)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.count{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+
+/* quiz */
+.qbox{background:var(--sheet);border:2px solid var(--ink);border-radius:12px;padding:16px;margin-top:14px}
+.qbox .qn{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.qbox h3{font-size:18px;margin-top:4px}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.opt{text-align:left;background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px}
+.opt:hover:not([disabled]){border-color:var(--ink)}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)} .opt.ng{border-color:var(--ng);background:var(--ng-bg)}
+.opt[disabled]{cursor:default}
+.why{margin-top:12px;font-size:14px;border-left:3px solid var(--line);padding-left:10px}
+.why b{display:block}
+.why.ok b{color:var(--ok)} .why.ng b{color:var(--ng)}
+
+/* result */
+.result{margin-top:20px;display:flex;flex-direction:column;gap:14px}
+.score{background:var(--ink);color:var(--paper);border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.score .big{font-family:var(--f-display);font-size:22px}
+.score .stars{font-size:24px;color:#5A6774}
+.score .stars .on{color:var(--accent)}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h3{font-size:16px;margin-bottom:6px}
+.card ul{margin:6px 0 0;padding-left:1.2em}
+.card li{margin-top:4px}
+.card.useful{border:2px solid var(--accent)}
+.card.useful h3::before{content:"＋ ";color:var(--c4)}
+.miss li{font-size:14px}
+.miss li span{color:var(--muted)}
+
+@media (max-width:640px){
+  .hero{grid-template-columns:1fr;padding-block:16px 28px}
+  .diagram{max-width:280px;order:-1}
+  .tools{grid-template-columns:1fr}
+  .missions{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* entrances */
+.doors{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+.door{text-align:left;background:var(--sheet);border:2px solid var(--ink);border-radius:14px;padding:18px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink);transition:transform .08s,box-shadow .08s;min-width:0}
+.door:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--ink)}
+.door .dk{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;font-family:var(--f-display);font-size:16px}
+.door.d1 .dk{background:var(--c1-bg);color:var(--c1)} .door.d2 .dk{background:var(--c3-bg);color:var(--c3)} .door.d3 .dk{background:var(--c2-bg);color:var(--c2)}
+.door strong{font-size:18px;line-height:1.45}
+.door span.s{font-size:14px;color:var(--muted)}
+.door .go{margin-top:auto;font-family:var(--f-mono);font-size:12px;font-weight:700}
+.mlist{display:flex;flex-direction:column;margin-top:14px;border-top:1px solid var(--line)}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 4px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left}
+.mrow:hover strong{text-decoration:underline}
+.mrow > div{min-width:0}
+.mrow small{display:block;color:var(--muted);font-size:13px}
+
+/* flow */
+.parts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.part{font-size:13px;font-weight:700;border-radius:6px;padding:3px 10px;background:var(--paper);border:1px solid var(--line)}
+.prog{display:flex;gap:6px;margin-top:16px}
+.prog i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.prog i.on{background:var(--ink)}
+.ans{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.ans.multi{grid-template-columns:1fr}
+.ans .opt{font-weight:500;min-height:56px}
+.ans.yn .opt{text-align:center;font-weight:700;font-size:17px}
+.ab-tag{font-family:var(--f-mono);font-weight:700;margin-right:6px;color:var(--muted)}
+.qback{background:none;border:0;padding:4px 0;color:var(--muted);font-size:14px;margin-top:12px}
+
+.rhead{background:var(--sheet);border:2px solid var(--ink);border-radius:14px;padding:18px 16px;box-shadow:4px 4px 0 var(--ink)}
+.rhead h3{font-family:var(--f-display);font-weight:400;font-size:24px;line-height:1.4;margin-top:4px}
+.rhead p{margin-top:8px}
+.meter{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.meter .mr{display:grid;grid-template-columns:7.5em 1fr 2.5em;gap:8px;align-items:center;font-size:14px}
+.meter .bar{height:10px;border-radius:5px;background:var(--paper);border:1px solid var(--line);overflow:hidden}
+.meter .bar b{display:block;height:100%;background:var(--c3)}
+.meter .mr.hi .bar b{background:var(--accent)}
+.meter .v{font-family:var(--f-mono);font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.acts{counter-reset:a;list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:10px}
+.acts li{counter-increment:a;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+.acts li::before{content:counter(a);display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-family:var(--f-mono);font-weight:700;font-size:13px}
+.acts li b{display:block}
+.acts li span{font-size:14px;color:var(--muted)}
+.care{border:2px solid var(--c2);background:var(--c2-bg)}
+.care .tel{font-family:var(--f-mono);font-weight:700;font-size:18px;user-select:all}
+.fine{font-size:12px;color:var(--muted)}
+.mbtns{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.mbtn{text-align:left;background:var(--paper);border:1.5px solid var(--ink);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.mbtn small{color:var(--muted);display:block;font-size:13px}
+.mbtn .arrow{font-family:var(--f-mono);font-weight:700}
+@media (max-width:640px){.doors{grid-template-columns:1fr}.ans{grid-template-columns:1fr}.ans.yn{grid-template-columns:1fr 1fr}}
+
+/* 日本語の改行・つぶれ対策 */
+body{word-break:keep-all;line-break:strict;overflow-wrap:anywhere}
+p,li,.desc,.door span.s,.mrow small,.mbtn small,.scene,.why,.bh{text-wrap:pretty}
+.nw{white-space:nowrap}
+.ans.ab .opt{display:grid;grid-template-columns:1.5em 1fr;align-items:start;gap:2px}
+.ans.ab .ab-tag{margin:0}
+.meter{gap:12px}
+.meter .mr{grid-template-columns:7.5em 1fr 1.5em;gap:10px}
+.meter .mr > span:first-child{white-space:nowrap;font-size:14px}
+.meter .bar{display:block;height:12px}
+.acts{gap:14px}
+.acts li b{line-height:1.6}
+.acts li span{display:block;line-height:1.75;margin-top:2px}
+.mbtn{padding:12px 14px}
+.mbtn small{margin-top:2px;line-height:1.6}
+.mrow small{line-height:1.6;margin-top:2px}
+.mrow .stars{flex-shrink:0}
+.card p{line-height:1.85}
+.rhead h3{line-height:1.45}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <button class="logo" id="home-link" aria-label="トップへ"><i>分</i>しくみ分解ラボ</button>
+</div></header>
+<main class="wrap" id="app"></main>
+<script>
+const MISSIONS = [
+  { id:"konbini", lv:1, type:"sort", title:"コンビニのしくみ", desc:"毎日行くお店を3つの役割に分解する", time:"約3分",
+    scene:"コンビニは24時間、棚にいつも商品が並んでいます。その裏でやっていることを<b>3つの役割</b>に分けてみよう。",
+    cats:[
+      {name:"仕入れる", hint:"売るモノを集めてくる"},
+      {name:"売る", hint:"お客さんの手に渡す"},
+      {name:"整える", hint:"お店を続けられる状態にする"}],
+    items:[
+      {t:"トラックが1日に何回もおにぎりを運んでくる", c:0, why:"売るモノを店に集めているので「仕入れる」。"},
+      {t:"売れた数を見て、明日の注文の数を決める", c:0, why:"次に何をどれだけ集めるかを決めているので「仕入れる」。"},
+      {t:"レジで会計をして袋に入れる", c:1, why:"商品をお客さんに渡す瞬間なので「売る」。"},
+      {t:"新商品を入口近くの目立つ場所に置く", c:1, why:"手に取ってもらうための工夫なので「売る」。"},
+      {t:"床やトイレをそうじする", c:2, why:"直接は売っていないけれど、お客さんがまた来たくなる店にするための仕事なので「整える」。"},
+      {t:"シフト表を作って、時間ごとの店員の数を決める", c:2, why:"お店を回せる状態を保つ仕事なので「整える」。"}],
+    point:"どんなお店も「集める → 渡す → 続ける」の3つで説明できます。細かい仕事がたくさんあっても、役割の箱に入れると、お店全体のしくみがすっきり見えます。",
+    useful:["バイトや文化祭の出店で、自分の仕事が全体のどこにあたるかがわかる","グループで役割分担を決めるとき、だれも担当していない仕事に気づける","ほかのお店（カフェ、本屋）を見たときも同じ箱で分けられる"] },
+
+  { id:"game", lv:1, type:"sort", title:"無料ゲームのしくみ", desc:"タダで遊べるのに、なぜ会社が続くのか", time:"約3分",
+    scene:"基本無料のスマホゲームは、ダウンロードにお金がかかりません。それでも運営が続くしくみを<b>3つの役割</b>に分けてみよう。",
+    cats:[
+      {name:"人を集める", hint:"はじめて遊ぶ人を増やす"},
+      {name:"続けてもらう", hint:"遊んだ人に毎日来てもらう"},
+      {name:"お金になる", hint:"運営にお金が入る"}],
+    items:[
+      {t:"ダウンロードが無料", c:0, why:"「お金がかかるならやめておこう」をなくして、遊ぶ人を増やしているので「人を集める」。"},
+      {t:"SNSや動画サイトに広告を出す", c:0, why:"まだ知らない人に知ってもらうためなので「人を集める」。"},
+      {t:"毎日ログインするとボーナスがもらえる", c:1, why:"毎日開く理由を作っているので「続けてもらう」。"},
+      {t:"新しいストーリーが定期的に追加される", c:1, why:"飽きずに遊び続けてもらうためなので「続けてもらう」。"},
+      {t:"有料の石を買ってガチャを回す", c:2, why:"遊ぶ人が直接お金を払うので「お金になる」。"},
+      {t:"動画広告を見るとアイテムがもらえる", c:2, why:"遊ぶ人は払っていないけれど、広告を出した会社から運営にお金が入るので「お金になる」。"}],
+    point:"「無料」の部分は、人を集めるための入口です。たくさん集めて、続けてもらい、その一部がお金になる。動画サイトやフリマアプリも同じしくみで動いています。",
+    useful:["「タダのもの」が何でお金を得ているかを見ぬけるようになる","課金するかどうかを、しくみをわかったうえで自分で決められる","将来、自分が何かを作って売る側になったときにも使える"] },
+
+  { id:"bunkasai", lv:2, type:"sort", title:"いつもギリギリの文化祭", desc:"出来事・くり返し・しくみの3層に分ける", time:"約4分",
+    scene:"あるクラスは毎年、文化祭の準備が前日までギリギリです。起きていることを<b>見えやすい順に3層</b>に分けてみよう。海に浮かぶ氷山のように、下の層ほど見えにくくなります。",
+    cats:[
+      {name:"出来事", hint:"今回、目に見えて起きたこと"},
+      {name:"くり返し", hint:"何度も起きていること"},
+      {name:"しくみ", hint:"くり返しを生んでいる決まりや状況"}],
+    items:[
+      {t:"前日の夜になっても看板ができていない", c:0, why:"今回たまたま見えている結果なので「出来事」。"},
+      {t:"当日、買い出し係がテープを買い忘れた", c:0, why:"1回の具体的なミスなので「出来事」。"},
+      {t:"去年もおととしも、最後の1週間に作業が集中した", c:1, why:"年をまたいで同じことが起きているので「くり返し」。"},
+      {t:"作業するのは、いつも同じ数人にかたよる", c:1, why:"毎回同じようになっているので「くり返し」。"},
+      {t:"「だれが、何を、いつまでに」を決める係がいない", c:2, why:"役割の決まりが抜けていることが、毎年の集中を生んでいるので「しくみ」。"},
+      {t:"準備期間の前半が、部活の大会の時期と重なっている", c:2, why:"人が集まれない状況そのものが原因なので「しくみ」。"}],
+    point:"出来事だけ見ると「看板係がサボった」で終わってしまいます。しくみを変えないかぎり、来年も同じことがくり返されます。人を責める前に、下の層を探すのがコツです。",
+    useful:["テスト前の一夜漬けなど、自分の同じ失敗がなぜくり返すのかを考えられる","部活や係でもめたとき、だれかを責める以外の解決策を出せる","大人の仕事でも「なぜなぜ分析」「氷山モデル」としてそのまま使われている"] },
+
+  { id:"line", lv:2, type:"sort", title:"返事が来ないメッセージ", desc:"事実・受け取り方・予想を見分ける", time:"約3分",
+    scene:"ミナトさんは友達にメッセージを送りました。3時間たっても返事がありません。ミナトさんの頭の中にあることを<b>3つ</b>に分けてみよう。",
+    cats:[
+      {name:"事実", hint:"だれが見ても同じこと"},
+      {name:"受け取り方", hint:"事実に自分がつけた意味"},
+      {name:"予想", hint:"これから起きそうだと思っていること"}],
+    items:[
+      {t:"メッセージに既読がついている", c:0, why:"画面を見ればだれでも確認できるので「事実」。"},
+      {t:"送ってから3時間たっている", c:0, why:"時刻を見れば確かめられるので「事実」。"},
+      {t:"怒らせたのかもしれない", c:1, why:"既読と時間に、自分で意味をつけているので「受け取り方」。"},
+      {t:"無視されている", c:1, why:"事実は「返事がない」だけ。「無視」は自分の想像なので「受け取り方」。"},
+      {t:"明日、学校で気まずくなる", c:2, why:"まだ起きていない未来の話なので「予想」。"},
+      {t:"このまま話さなくなるかもしれない", c:2, why:"未来についての想像なので「予想」。"}],
+    point:"事実は2つだけでした。モヤモヤの大部分は、受け取り方と予想でできています。受け取り方にはほかの可能性（部活中だった、返事を考えている）もあります。分けると「明日、直接聞いてみる」のように事実を確かめる行動が選べます。",
+    useful:["ネットのうわさやニュースを読むとき、事実と意見を分けて読める","先生や家族とすれ違ったとき、感情的にならずに話を整理できる","気持ちがふくらんだとき、事実だけを書き出すと落ち着いて考えられる"] },
+
+  { id:"job", lv:3, type:"quiz", title:"仕事をひとことで", desc:"作業ではなく「だれの何を解決しているか」で言う", time:"約4分",
+    scene:"仕事は「何をしているか（作業）」と「だれの、どんな困りごとを解決しているか（目的）」に分けられます。<b>目的</b>に近いほうを選んでみよう。",
+    qs:[
+      {q:"パン屋さんの仕事を、ひとことで言うと？", o:["パンを焼く仕事","朝ごはんやお昼を用意する手間を減らす仕事","小麦粉を買ってパンの形にする仕事"], a:1,
+        why:"「焼く」「形にする」は作業です。食べる人から見ると、手軽においしい食事がほしいという困りごとを解決しています。だからコンビニやスーパーもライバルになります。"},
+      {q:"美容師さんの仕事を、ひとことで言うと？", o:["ハサミで髪を切る仕事","見た目を整えて、人前に出る自信をつくる仕事","お店で予約を受ける仕事"], a:1,
+        why:"切ることは、そのための作業です。お客さんが求めているのは「こうなりたい自分」に近づくことです。"},
+      {q:"ゲームのテスターの仕事を、ひとことで言うと？", o:["ゲームで遊ぶ仕事","バグを見つけて報告する仕事","遊ぶ人がいやな思いをする前に、問題を防ぐ仕事"], a:2,
+        why:"バグ探しは作業の一つです。目的は、発売後に遊ぶ人が困らないようにすること。だから「仕様書どおりか」だけでなく「遊びにくくないか」も確かめます。"},
+      {q:"宅配ドライバーの仕事を、ひとことで言うと？", o:["トラックを運転する仕事","ほしい物が、ほしい時に手元に届くようにする仕事","荷物を積みおろしする仕事"], a:1,
+        why:"運転も積みおろしも、そのための作業です。受け取る人の「お店に行けない」「すぐほしい」という困りごとを解決しています。"},
+      {q:"塾の先生の仕事を、ひとことで言うと？", o:["問題の解き方を説明する仕事","テストを作って採点する仕事","目標までの道すじが見えない状態を、見える状態にする仕事"], a:2,
+        why:"説明や採点は、そのための作業です。生徒の「何をどれだけやれば届くのかわからない」という困りごとを解決しています。"}],
+    point:"職業名から選ぼうとすると「なりたいものがない」で止まりがちです。「だれのどんな困りごとなら解決したいか」で考えると、同じ目的の仕事がいくつも見つかり、選べる道が一気に増えます。",
+    useful:["進路を考えるとき、職業名ではなく「解決したい困りごと」から探せる","バイトや係の仕事で、作業の目的がわかると工夫の方向が見える","面接や志望理由で「何がしたいか」を自分の言葉で説明できる"] },
+
+  { id:"suki", lv:3, type:"sort", title:"「好き」の中身", desc:"楽しかった場面を4つの部品に分ける", time:"約3分",
+    scene:"ユウさんは「これといって好きなことはない」と言います。でも、ふり返ると「ちょっと楽しかった」場面はいくつかありました。それぞれ、何が楽しかったのかを<b>4つの部品</b>に分けてみよう。",
+    cats:[
+      {name:"集める", hint:"そろえる・くわしくなる"},
+      {name:"競う", hint:"だれかや前の自分と比べて上をめざす"},
+      {name:"作る・工夫する", hint:"自分なりの形を考える"},
+      {name:"人とつながる", hint:"だれかといっしょに・だれかのために"}],
+    items:[
+      {t:"好きなシールや文房具を、つい集めてしまう", c:0, why:"そろっていくこと自体が楽しいので「集める」。"},
+      {t:"気になったことを調べて、ノートにまとめた", c:0, why:"知っていることが増えるのが楽しいので「集める」。"},
+      {t:"前より速いタイムで走れてうれしかった", c:1, why:"前の自分と比べて上に行けたのが楽しいので「競う」。"},
+      {t:"テストの点数で、友達と勝負した", c:1, why:"勝ち負けがはっきりするのが楽しいので「競う」。"},
+      {t:"お菓子を自分なりにアレンジして作った", c:2, why:"自分で考えて形にしたのが楽しいので「作る・工夫する」。"},
+      {t:"部屋のもようがえを考えた", c:2, why:"どう置けばいいか、あれこれ考えるのが楽しいので「作る・工夫する」。"},
+      {t:"友達と同じ曲を聞いて、感想を話した", c:3, why:"だれかと同じものを楽しめたのがうれしいので「人とつながる」。"},
+      {t:"道に迷っている人に、行き方を教えた", c:3, why:"だれかの役に立てたのがうれしいので「人とつながる」。"}],
+    point:"ユウさんの「ちょっと楽しかった」には、4つの部品が全部入っていました。大きな「好き」がないように思えても、小さな楽しさを分けてみると、自分がどの部品で楽しくなりやすいかが見えてきます。集めるのが楽しいなら調べものやコレクション、競うのが楽しいならスポーツや検定、作るのが楽しいなら料理やデザイン、つながるのが楽しいなら人の役に立つ係や仕事へとつながります。",
+    useful:["進路の希望や自己PRで、自分に向いていそうなことを具体的な言葉で書ける","部活や習いごとを選ぶとき、何が合いそうかのヒントになる","友達との好きのちがいがわかり、話がかみ合いやすくなる"] }
+];
+
+/* ===== 入口ごとの質問フロー ===== */
+const YN = [{t:"はい"},{t:"いいえ"}];
+const FLOWS = {
+  tired: {
+    door:"最近、なんだか楽しくない", sub:"前より「楽しい」が減った気がする人へ", key:"d1", mark:"楽",
+    title:"「楽しい」の部品をチェックする",
+    intro:"楽しさは気分だけで決まるものではなく、いくつかの部品が合わさってできている、と考えてみます。どの部品が足りていないかを、はい／いいえで確かめましょう。",
+    parts:["エネルギー（体力・余裕）","新しさ（いつもと違うこと）","人（だれかといる時間）"],
+    qs:[
+      {q:"前は楽しかったことが、最近あまり楽しく感じない", kind:"yn", opts:[{t:"はい"},{t:"いいえ",s:{small:2}}]},
+      {q:"学校・宿題・習いごとなどで、1日の予定がほぼ埋まっている", kind:"yn", opts:[{t:"はい",s:{energy:2}},{t:"いいえ"}]},
+      {q:"休みの日も、だいたい同じ過ごし方をしている", kind:"yn", opts:[{t:"はい",s:{change:2}},{t:"いいえ"}]},
+      {q:"最近、だれかと一緒に何かをした時間が少ない", kind:"yn", opts:[{t:"はい",s:{people:2}},{t:"いいえ"}]},
+      {q:"横になってスマホを見ているうちに、1日が終わることが多い", kind:"yn", opts:[{t:"はい",s:{energy:1,change:1}},{t:"いいえ"}]}
+    ],
+    meter:[["energy","エネルギー"],["change","新しさ"],["people","人"]],
+    meterLabel:"足りていないかもしれない部品",
+    resolve(st){
+      const order=["energy","change","people","small"];
+      let best=null,bv=0; for(const k of order){ if((st.s[k]||0)>bv){bv=st.s[k];best=k;} }
+      return best || "mild";
+    },
+    results:{
+      energy:{name:"エネルギー切れかも", link:"like",
+        desc:"予定がつまっていて、楽しさを感じる余裕が残っていない状態かもしれません。楽しいことを足すより、先に「引く」ほうが効きます。",
+        acts:[["予定を1つ減らすか、短くする","全部は無理でも、1つだけ。何をやめるかは、自分で選んでかまいません。"],
+              ["自分が「一番楽だな」と思うことを優先する","好きかどうかは考えなくて大丈夫です。ぼーっとする、散歩する、音楽を流すなど、やっていて楽なことを選びます。"],
+              ["寝る時間を30分早める","楽しさを探すより先に、エネルギーの部品を回復させます。"]],
+        why:"楽しさは「余裕」の上に乗っています。余裕がないまま新しいことを足すと、それも「やらなきゃいけないこと」に変わってしまいます。少し余裕が戻ってきて、「一番楽なこと」を探してみたくなったら、好きなこと探しの質問にも答えてみてください。",
+        missions:["bunkasai"]},
+      change:{name:"毎日が同じになっているかも",
+        desc:"毎日が同じことのくり返しで、新しいことが少ない状態かもしれません。人は同じことに慣れると、そこから受ける楽しさが小さくなっていきます。",
+        acts:[["帰り道か、寄るお店を1つだけ変える","大きな変化はいりません。いつもと違う景色を1つ入れます。"],
+              ["図書館で、ふだん行かない棚から1冊借りる","読まなくても大丈夫。手に取るだけで新しさの部品が入ります。"],
+              ["新しいことを5分だけ試す","合わなければやめていい、と最初に決めておくのがコツです。"]],
+        why:"慣れたことは安心できますが、そのぶんワクワクは小さくなります。少しだけ「いつもと違うこと」を入れると、同じ毎日でも「おっ」と思える場面が増えます。",
+        missions:["konbini","game"]},
+      people:{name:"人との時間が足りないかも",
+        desc:"ひとりの時間が長くなって、だれかと同じものを見たり、話したりする時間が減っているのかもしれません。たくさん話す必要はありません。",
+        acts:[["だれかと同じ場所で、同じことをする","図書館で勉強する、部活を見学するなど。話さなくても「一緒にいる」だけで部品になります。"],
+              ["好きなものの感想を1つ、だれかに送る","返事がなくても大丈夫。外に出すこと自体が目的です。"],
+              ["学校や地域のイベントに1回だけ参加する","続けるかどうかは、行ってから決めればいいです。"]],
+        why:"同じものを見て「いいね」と言い合えると、ひとりで感じるより楽しさが大きくなりやすいです。たくさん話さなくても、「ちょっと分け合う」だけで十分です。",
+        missions:["line","suki"]},
+      mild:{name:"大きく欠けている部品は見つからなかった",
+        desc:"今回の質問では、特定の部品が大きく足りないという答えにはなりませんでした。理由がはっきりしない時期は、だれにでもあります。原因を探すより、小さな記録から始めてみましょう。",
+        acts:[["1日1つ「ちょっとよかった」をメモする","1週間続けると、楽しさが戻ってきている部分に気づきやすくなります。"],
+              ["いつもと違うことを1つだけ入れる","新しさの部品を少し足すと、ほかの部品も動きやすくなります。"],
+              ["しばらく続くなら、身近な大人に話してみる","理由がわからないモヤモヤほど、人に話すと整理されます。"]],
+        why:"原因がはっきりしないときに大きな対策をすると疲れてしまいます。記録で「事実」を集めてから考えるのが、いちばん確実な分解のしかたです。",
+        missions:["line"]},
+      small:{name:"もともと「すごく好き」が少ないタイプかも",
+        desc:"前から大きな楽しさを感じることが少ない、という人は意外とたくさんいます。変なことではありません。大きな「好き」がないなら、小さな「ちょっといい」から集めるのが近道です。",
+        acts:[["1日1つ「ちょっとよかった」をメモする","パンがおいしかった、くらいで十分です。1週間で7個たまります。"],
+              ["たまったメモを部品に分ける","「食べる」「見る」「作る」など、共通点がないか見てみます。"],
+              ["「好きなことを見つけたい」の質問にも答えてみる","楽しさの中身を、別の角度から分けて見られます。"]],
+        why:"「好きなこと」を大きなかたまりのまま探すと見つかりにくいです。小さな「ちょっといい」を集めて分けると、自分の好みの部品が見えてきます。",
+        missions:["suki"], link:"like"}
+    }
+  },
+
+  like: {
+    door:"好きなことを見つけたい", sub:"「趣味は？」と聞かれて止まってしまう人へ", key:"d2", mark:"好",
+    title:"「好き」の部品を見つける",
+    intro:"「好き」は1つの大きなかたまりではなく、「集める」「競う」「作る」「つながる」といった部品でできている、と考えてみます。深く考えずに、AかBの近いほうを選んでください。",
+    parts:["集める・知る","競う・上をめざす","作る・工夫する","人とつながる"],
+    qs:[
+      {q:"休みの日に、やってみたいのは？", kind:"ab", opts:[{t:"気になるものを見て回ったり、調べたりする",s:{collect:1}},{t:"何かを作ってみる",s:{make:1}}]},
+      {q:"うれしいのは、どっち？", kind:"ab", opts:[{t:"前の自分より、うまくできたとき",s:{compete:1}},{t:"だれかに「ありがとう」と言われたとき",s:{connect:1}}]},
+      {q:"机や部屋にあると落ち着くのは？", kind:"ab", opts:[{t:"同じ種類のものが、そろって並んでいる",s:{collect:1}},{t:"自分で作ったり、かざったりしたもの",s:{make:1}}]},
+      {q:"何かに取り組むなら？", kind:"ab", opts:[{t:"点数や順位がわかるほうが、やる気が出る",s:{compete:1}},{t:"だれかと一緒にやるほうが、楽しい",s:{connect:1}}]},
+      {q:"時間を忘れやすいのは？", kind:"ab", opts:[{t:"目標やタイムを決めて、チャレンジするとき",s:{compete:1}},{t:"材料や道具を使って、あれこれ工夫するとき",s:{make:1}}]},
+      {q:"友達に言われてうれしいのは？", kind:"ab", opts:[{t:"「それ、くわしいね！」",s:{collect:1}},{t:"「話を聞いてもらえてよかった」",s:{connect:1}}]}
+    ],
+    meter:[["collect","集める・知る"],["compete","競う"],["make","作る・工夫する"],["connect","つながる"]],
+    meterLabel:"あなたの「好き」の部品（各3点満点）", max:3,
+    resolve(st){
+      const ks=["collect","compete","make","connect"];
+      const sorted=[...ks].sort((a,b)=>(st.s[b]||0)-(st.s[a]||0));
+      return sorted[0];
+    },
+    results:{
+      collect:{name:"あなたの好きの部品は<span class=\"nw\">「集める・知る」</span>",
+        desc:"そろえること、くわしくなることに楽しさを感じやすいタイプです。量が増えたり、知識がつながったりする瞬間がうれしいはず。",
+        acts:[["気になるテーマを1つ決めて、リストを作る","お菓子、駅、植物、何でもOK。見たものに印をつけていきます。"],
+              ["博物館・資料館・図鑑コーナーに行く","たくさん集められたものを見ると、自分が何にひかれるかのヒントが見つかります。"],
+              ["集めたことを、だれかに1つ紹介する","人に説明すると、自分が何にひかれているかがはっきりします。"]],
+        why:"このタイプの好きは、研究、図書館や博物館の仕事、たくさんの情報を整理する仕事などにつながっています。",
+        missions:["suki","konbini"]},
+      compete:{name:"あなたの好きの部品は<span class=\"nw\">「競う・上をめざす」</span>",
+        desc:"記録や勝ち負けがはっきりしていると燃えるタイプです。相手がいなくても「前の自分」と比べるのも楽しめます。",
+        acts:[["記録が数字で出るものを1つ選ぶ","タイピング、ランニングアプリ、検定など。数字が見えるとやる気が続きます。"],
+              ["先週の自分と比べる","人と比べてつらくなる時は、比べる相手を自分にします。"],
+              ["出られる大会やコンテストを1つ調べる","出るかどうかは後で決めてOK。目標があると毎日が変わります。"]],
+        why:"このタイプの好きは、スポーツ、営業、資格や検定、プログラミングの大会など、結果が目に見える分野につながっています。",
+        missions:["suki","game"]},
+      make:{name:"あなたの好きの部品は<span class=\"nw\">「作る・工夫する」</span>",
+        desc:"自分なりの形を考えて、組み立てることに楽しさを感じやすいタイプです。完成した瞬間より、あれこれ試している途中が好きな人もいます。",
+        acts:[["30分で完成する小さなものを1つ作る","料理1品、イラスト1枚、短い動画など。大きな作品より、まず完成させることが大事です。"],
+              ["作り方の動画を1本まねしてみる","まねは立派な練習です。どこを自分流に変えたくなるかが、好みのヒントです。"],
+              ["できたものを、だれかに見せる","感想をもらうと、次に作りたいものが見えてきます。"]],
+        why:"このタイプの好きは、デザイン、プログラミング、料理、建築、ものづくりなどの仕事につながっています。",
+        missions:["suki","job"]},
+      connect:{name:"あなたの好きの部品は<span class=\"nw\">「人とつながる」</span>",
+        desc:"だれかと一緒にいること、だれかの役に立つことに楽しさを感じやすいタイプです。何をするかより「だれとするか」が大事かもしれません。",
+        acts:[["係や手伝いを1つ引き受ける","「ありがとう」と言われる場面を、自分から1つ作ってみます。"],
+              ["友達のおすすめを試して、感想を返す","相手の好きに乗っかるのも、立派なつながり方です。"],
+              ["ボランティアや地域のイベントを1つ調べる","年齢を問わず参加できるものも多くあります。"]],
+        why:"このタイプの好きは、教育、医療・福祉、接客、チームで動く仕事など、人と関わる仕事につながっています。",
+        missions:["suki","line"]}
+    }
+  },
+
+  shikumi: {
+    door:"身近なしくみを知りたい", sub:"お店・ゲーム・学校・人間関係の裏側をのぞく", key:"d3", mark:"知",
+    title:"どのしくみを分解する？",
+    intro:"身近なことも、役割ごとに分けると「なぜそうなっているか」が見えてきます。気になるものを選んでください。",
+    parts:["お店とお金","ゲームとネット","学校と部活","友達づきあい","仕事と将来"],
+    qs:[
+      {q:"いちばん気になるのは？", kind:"multi", opts:[
+        {t:"お店とお金：コンビニはなぜいつも商品がそろっている？",v:{topic:"shop"}},
+        {t:"ゲームとネット：無料のアプリはどうやって運営されている？",v:{topic:"net"}},
+        {t:"学校と部活：同じトラブルがなぜ毎年起きる？",v:{topic:"school"}},
+        {t:"友達づきあい：なぜ気持ちがモヤモヤする？",v:{topic:"friend"}},
+        {t:"仕事と将来：仕事って結局なにをしている？",v:{topic:"work"}}]},
+      {q:"どっちのやり方が好き？", kind:"ab", opts:[{t:"まず練習問題で、答えと解説を見たい",v:{style:"learn"}},{t:"まず実際に外で見て確かめたい",v:{style:"see"}}]}
+    ],
+    resolve(st){ return st.v.topic; },
+    results:{
+      shop:{name:"お店とお金のしくみ",
+        desc:"お店は「仕入れる」「売る」「整える」の3つの役割で回っています。この箱を知っていると、どんなお店でも同じように分解できます。",
+        acts:[["入口近くに何が置いてあるか見る","いちばん目立つ場所は、お店がいちばん売りたい物を置く場所です。何を売りたい店なのかがわかります。"],
+              ["同じ商品の値段を、2つのお店で比べる","値段の違いは、仕入れ方や場所代など、しくみの違いから生まれています。"],
+              ["店員さんが今どの役割の仕事をしているか考える","レジ、品出し、そうじ。3つの箱のどれかに入るはずです。"]],
+        why:"お店のしくみがわかると、バイトや文化祭の出店で、自分の仕事が全体のどこにあたるかがわかるようになります。",
+        missions:["konbini"]},
+      net:{name:"ゲームとネットのしくみ",
+        desc:"無料のサービスは「人を集める」「続けてもらう」「お金になる」の3つで回っています。無料の部分は、人を集めるための入口です。",
+        acts:[["よく使うアプリが何でお金を得ているか、3つ書き出す","課金、広告、会員プランなど。わからないものは調べてみます。"],
+              ["広告が出るタイミングを数えてみる","どこで出るかを見ると、運営がどこでお金を得たいかがわかります。"],
+              ["ログインボーナスや通知の役割を考える","「続けてもらう」ためのしかけが、意外とたくさん見つかります。"]],
+        why:"しくみがわかると、課金するかどうか、どれくらい使うかを、自分で決められるようになります。",
+        missions:["game"]},
+      school:{name:"学校と部活のしくみ",
+        desc:"同じトラブルがくり返されるときは、目に見える「出来事」の下に「くり返し」と、それを生む「しくみ」があります。",
+        acts:[["クラスや部活で毎回起きることを1つ選ぶ","準備がギリギリ、いつも同じ人が損をする、など。"],
+              ["原因が「決まり」「時期」「人数」のどれかを考える","人のせいにする前に、しくみの側を探します。"],
+              ["しくみを1つ変える案を出してみる","係を1人決める、締め切りを早めにする、など小さくてOK。"]],
+        why:"人を責めずに原因を探せると、もめごとが減り、同じ失敗をくり返さなくなります。",
+        missions:["bunkasai"]},
+      friend:{name:"友達づきあいのしくみ",
+        desc:"モヤモヤは「事実」「自分の受け取り方」「これからの予想」が混ざってできています。分けると、ふくらんだ気持ちが小さくなります。",
+        acts:[["気になったことを「事実」と「受け取り方」に分けてメモする","事実はだれが見ても同じこと。受け取り方は自分がつけた意味です。"],
+              ["受け取り方を、別の可能性で2つ書いてみる","「怒っている」以外に、「忙しい」「気づいていない」など。"],
+              ["事実を確かめる行動を1つ選ぶ","直接聞く、少し待つ、など。想像より事実のほうが軽いことが多いです。"]],
+        why:"事実と意見を分けられると、人間関係だけでなく、ネットのうわさやニュースも落ち着いて読めるようになります。",
+        missions:["line"]},
+      work:{name:"仕事のしくみ",
+        desc:"仕事は「何をしているか（作業）」と「だれの、どんな困りごとを解決しているか（目的）」に分けられます。",
+        acts:[["身近な仕事を1つ選ぶ","家族の仕事、よく行くお店の仕事など。"],
+              ["「だれの・どんな困りごとを・どうやって」に分けて書く","パン屋なら「忙しい人の・食事の手間を・手軽なパンで」。"],
+              ["同じ困りごとを解決している別の仕事を探す","パン屋のライバルはコンビニかもしれません。"]],
+        why:"職業名ではなく「解決したい困りごと」で考えると、なりたいものがなくても、選べる道がぐっと増えます。",
+        missions:["job"]}
+    }
+  }
+};
+
+/* ===== 状態と保存 ===== */
+const KEY = "shikumi-lab-progress";
+let progress = {};
+try { progress = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e) { progress = {}; }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(progress)); } catch(e) {} }
+function starHTML(n){ let s=""; for(let i=0;i<3;i++) s+=`<span class="${i<n?'on':''}">★</span>`; return s; }
+const app = document.getElementById("app");
+document.getElementById("home-link").addEventListener("click", ()=>renderHome());
+
+/* ===== トップ ===== */
+function renderHome(scrollTo){
+  app.innerHTML = `
+  <section class="hero">
+    <div>
+      <div class="label">答えて、分けて、次の一歩へ</div>
+      <h1>次にやること、<br><mark>ひとつ</mark>見つけよう。</h1>
+      <p class="lead">入口を選んで、はい／いいえ・AかBで答えるだけ。あなたの答えを「部品」に分けて、今すぐできる小さな行動と、考え方の練習ミッションをおすすめします。</p>
+    </div>
+    <svg class="diagram" viewBox="0 0 320 230" role="img" aria-label="楽しさをエネルギー・新しさ・人の3つの部品に分けた分解図">
+      <path class="lead-line" d="M160 92 L160 66 M118 128 L70 160 M202 128 L250 160"/>
+      <rect class="core" x="100" y="92" width="120" height="44" rx="8"/>
+      <text class="t" x="160" y="119" text-anchor="middle">楽しい</text>
+      <rect class="p1" x="110" y="22" width="100" height="44" rx="8"/>
+      <text class="t" x="160" y="44" text-anchor="middle">エネルギー</text>
+      <text class="s" x="160" y="58" text-anchor="middle">体力・余裕</text>
+      <rect class="p2" x="14" y="160" width="100" height="44" rx="8"/>
+      <text class="t" x="64" y="182" text-anchor="middle">新しさ</text>
+      <text class="s" x="64" y="196" text-anchor="middle">いつもと違う</text>
+      <rect class="p3" x="206" y="160" width="100" height="44" rx="8"/>
+      <text class="t" x="256" y="182" text-anchor="middle">人</text>
+      <text class="s" x="256" y="196" text-anchor="middle">だれかと</text>
+    </svg>
+  </section>
+
+  <section class="block" id="doors">
+    <div class="label">入口を選ぶ</div>
+    <h2>どれがいちばん近い？</h2>
+    <p class="sub">質問は2〜6問。1〜2分で終わります。</p>
+    <div class="doors">
+      ${Object.entries(FLOWS).map(([id,f])=>`
+        <button class="door ${f.key}" data-flow="${id}">
+          <span class="dk">${f.mark}</span>
+          <strong>${f.door}</strong>
+          <span class="s">${f.sub}</span>
+          <span class="go">${f.qs.length}問 →</span>
+        </button>`).join("")}
+    </div>
+  </section>
+
+  <section class="block" id="map">
+    <div class="label">練習ミッション</div>
+    <h2>分ける力を、ゲームで練習</h2>
+    <p class="sub">おすすめの結果から来なくても、どれからでも遊べます。クリアの★はこの端末に記録されます。</p>
+    <div class="mlist">
+      ${MISSIONS.map(m=>`<button class="mrow" data-go="${m.id}"><div><strong>${m.title}</strong><small>${m.desc}</small></div><span class="stars">${starHTML(progress[m.id]||0)}</span></button>`).join("")}
+    </div>
+  </section>
+
+  <footer class="note">
+    <p>しくみ分解ラボは、物事を分けて考える練習をするための教材です。おすすめは答えをもとにしたアイデアで、あなたのことを決めつけるものではありません。</p>
+    <p>運営：FD（<a href="https://labfond.com" target="_blank" rel="noopener">labfond.com</a>）</p>
+  </footer>`;
+  app.querySelectorAll("[data-flow]").forEach(b=>b.addEventListener("click",()=>startFlow(b.dataset.flow)));
+  app.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>startMission(b.dataset.go)));
+  if(scrollTo) document.getElementById(scrollTo).scrollIntoView(); else window.scrollTo(0,0);
+}
+
+/* ===== 質問フロー ===== */
+function startFlow(id){
+  const f = FLOWS[id]; const picks = [];
+  function state(){
+    const st={s:{},flags:{},v:{}};
+    picks.forEach((p,qi)=>{ const o=f.qs[qi].opts[p];
+      if(o.s) for(const k in o.s) st.s[k]=(st.s[k]||0)+o.s[k];
+      if(o.f) st.flags[o.f]=true;
+      if(o.v) Object.assign(st.v,o.v); });
+    return st;
+  }
+  function draw(){
+    const qi=picks.length;
+    if(qi>=f.qs.length){ showResult(id, f, state()); return; }
+    const q=f.qs[qi];
+    app.innerHTML = `<div class="play">
+      <button class="back" id="back">← 入口を選びなおす</button>
+      <div class="play-head"><div class="label">${f.door}</div><h2>${f.title}</h2></div>
+      ${qi===0?`<div class="scene">${f.intro}<div class="parts">${f.parts.map(p=>`<span class="part">${p}</span>`).join("")}</div></div>`:""}
+      <div class="prog" aria-label="${qi+1}問目 / ${f.qs.length}問">${f.qs.map((_,i)=>`<i class="${i<=qi?'on':''}"></i>`).join("")}</div>
+      <div class="qbox">
+        <div class="qn">Q${qi+1} / ${f.qs.length}${q.kind==="ab"?"　AとB、近いほうは？":""}</div>
+        <h3>${q.q}</h3>
+        <div class="ans ${q.kind}">
+          ${q.opts.map((o,i)=>`<button class="opt" data-i="${i}">${q.kind==="ab"?`<span class="ab-tag">${"AB"[i]}</span>`:""}${o.t}</button>`).join("")}
+        </div>
+      </div>
+      ${qi>0?`<button class="qback" id="prev">← ひとつ前の質問にもどる</button>`:""}
+    </div>`;
+    document.getElementById("back").addEventListener("click",()=>renderHome("doors"));
+    app.querySelectorAll(".ans .opt").forEach(b=>b.addEventListener("click",()=>{ picks.push(+b.dataset.i); draw(); }));
+    const prev=document.getElementById("prev"); if(prev) prev.addEventListener("click",()=>{ picks.pop(); draw(); });
+    window.scrollTo(0,0);
+  }
+  draw();
+}
+
+function showResult(id, f, st){
+  const key=f.resolve(st); const r=f.results[key];
+  let meter="";
+  if(f.meter && !r.care){
+    const max=f.max || Math.max(1,...f.meter.map(([k])=>st.s[k]||0));
+    const top=Math.max(...f.meter.map(([k])=>st.s[k]||0));
+    meter=`<div class="card"><h3>${f.meterLabel}</h3><div class="meter">
+      ${f.meter.map(([k,l])=>{const v=st.s[k]||0;return `<div class="mr ${v===top&&v>0?'hi':''}"><span>${l}</span><span class="bar"><b style="width:${Math.round(v/max*100)}%"></b></span><span class="v">${v}</span></div>`;}).join("")}
+    </div></div>`;
+  }
+  const missions=(r.missions||[]).map(mid=>MISSIONS.find(m=>m.id===mid));
+  const missionCard = missions.length?`<div class="card"><h3>考え方の練習ミッション</h3><p class="fine">この結果と同じ「分け方」を、ゲームで練習できます。</p><div class="mbtns">
+      ${missions.map(m=>`<button class="mbtn" data-go="${m.id}"><span><strong>${m.title}</strong><small>${m.desc}<span class="nw">・${m.time}</span></small></span><span class="arrow">→</span></button>`).join("")}</div></div>`:"";
+  const actsCard = `<div class="card useful"><h3>おすすめの小さな行動</h3><ol class="acts">${r.acts.map(([a,b])=>`<li><div><b>${a}</b><span>${b}</span></div></li>`).join("")}</ol></div>`;
+  const seeFirst = st.v.style==="see";
+  app.innerHTML = `<div class="play">
+    <button class="back" id="back">← 入口を選びなおす</button>
+    <div class="result">
+      <div class="rhead ${r.care?'care':''}"><div class="label">あなたの答えから</div><h3>${r.name}</h3><p>${r.desc}</p>
+</div>
+      ${meter}
+      ${seeFirst? actsCard + missionCard : (id==="shikumi"? missionCard + actsCard : actsCard + missionCard)}
+      <div class="card"><h3>なぜこれがおすすめ？</h3><p>${r.why}</p></div>
+      ${r.link?`<button class="btn primary" id="link">好きなことを探してみる →</button>`:""}
+      <div class="actions">
+        <button class="btn" id="again">もう一度答える</button>
+        <button class="btn" id="home">ほかの入口を見る</button>
+      </div>
+      ${id==="tired"?`<p class="fine">この結果は答えをもとにしたアイデアで、あなたのことを決めつけるものではありません。つらい状態が続くときは、話せそうな身近な人に相談してみてください。</p>`:""}
+    </div></div>`;
+  document.getElementById("back").addEventListener("click",()=>renderHome("doors"));
+  document.getElementById("again").addEventListener("click",()=>startFlow(id));
+  document.getElementById("home").addEventListener("click",()=>renderHome("doors"));
+  if(r.link) document.getElementById("link").addEventListener("click",()=>startFlow(r.link));
+  app.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>startMission(b.dataset.go)));
+  window.scrollTo(0,0);
+}
+
+/* ===== 練習ミッション ===== */
+function head(m){
+  return `<button class="back" id="back">← トップへ</button>
+  <div class="play-head">
+    <div class="label">練習ミッション ／ ${m.type==="sort"?"仕分け":"えらぶ"}・${m.time}</div>
+    <h2>${m.title}</h2>
+  </div>
+  <div class="scene">${m.scene}</div>`;
+}
+function bindBack(){ document.getElementById("back").addEventListener("click",()=>renderHome("map")); }
+function startMission(id){
+  const m = MISSIONS.find(x=>x.id===id);
+  if(m.type==="sort") playSort(m); else playQuiz(m);
+  window.scrollTo(0,0);
+}
+
+function playSort(m){
+  const order = m.items.map((_,i)=>i).sort(()=>Math.random()-.5);
+  const place = {}; let sel = null; let checked = false;
+  app.innerHTML = `<div class="play">${head(m)}
+    <p class="howto">部品をタップして選び、入れたい箱をタップ。箱の中の部品をタップするとトレイに戻せます。</p>
+    <div class="label" style="margin-top:12px">部品トレイ</div>
+    <div class="tray" id="tray"></div>
+    <div class="bins" id="bins"></div>
+    <div class="actions"><button class="btn primary" id="check" disabled>答え合わせ</button><span class="count" id="count"></span></div>
+    <div id="res"></div></div>`;
+  bindBack();
+  const tray=document.getElementById("tray"), bins=document.getElementById("bins");
+  function chip(i){
+    const it=m.items[i]; let cls="chip"; let mk="";
+    if(checked){ const ok=place[i]===it.c; cls+=ok?" ok":" ng"; mk=`<span class="mk">${ok?"○":"×"}</span>`; }
+    else if(sel===i) cls+=" sel";
+    return `<button class="${cls}" data-i="${i}" ${checked?"disabled":""}>${mk}${it.t}</button>`;
+  }
+  function draw(){
+    tray.innerHTML = order.filter(i=>place[i]===undefined).map(chip).join("");
+    bins.innerHTML = m.cats.map((c,ci)=>`
+      <div class="bin k${ci+1} ${sel!==null&&!checked?"ready":""}" data-c="${ci}" role="button" tabindex="0" aria-label="${c.name}の箱">
+        <span class="bl">${c.name}</span><span class="bh">${c.hint}</span>
+        <div class="in">${order.filter(i=>place[i]===ci).map(chip).join("")}</div>
+      </div>`).join("");
+    const n=Object.keys(place).length;
+    document.getElementById("count").textContent=`${n} / ${m.items.length} 個`;
+    document.getElementById("check").disabled = checked || n<m.items.length;
+  }
+  const root=app.querySelector(".play");
+  root.addEventListener("click", e=>{
+    if(checked) return;
+    const c=e.target.closest(".chip");
+    if(c){ const i=+c.dataset.i;
+      if(place[i]!==undefined){ delete place[i]; sel=i; } else sel = sel===i?null:i;
+      draw(); return; }
+    const b=e.target.closest(".bin");
+    if(b && sel!==null){ place[sel]=+b.dataset.c; sel=null; draw(); }
+  });
+  bins.addEventListener("keydown",e=>{ const b=e.target.closest(".bin"); if(b&&(e.key==="Enter"||e.key===" ")&&sel!==null){ e.preventDefault(); place[sel]=+b.dataset.c; sel=null; draw(); }});
+  document.getElementById("check").addEventListener("click",()=>{
+    checked=true; sel=null; draw();
+    const wrong=m.items.map((it,i)=>({it,i})).filter(x=>place[x.i]!==x.it.c);
+    const stars = wrong.length===0?3:wrong.length<=2?2:1;
+    finish(m, stars, `${m.items.length}個中 ${m.items.length-wrong.length}個 正解`,
+      wrong.length? `<div class="card miss"><h3>ちがう箱に入っていた部品</h3><ul>${wrong.map(x=>`<li>${x.it.t}<br><span>→ 正しくは「${m.cats[x.it.c].name}」。${x.it.why}</span></li>`).join("")}</ul></div>`:"");
+  });
+  draw();
+}
+
+function playQuiz(m){
+  let qi=0, correct=0;
+  app.innerHTML = `<div class="play">${head(m)}<div id="q"></div><div id="res"></div></div>`;
+  bindBack();
+  const box=document.getElementById("q");
+  function drawQ(){
+    const q=m.qs[qi];
+    box.innerHTML = `<div class="qbox"><div class="qn">Q${qi+1} / ${m.qs.length}</div><h3>${q.q}</h3>
+      <div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join("")}</div><div id="w"></div></div>`;
+    box.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{
+      const i=+b.dataset.i, ok=i===q.a; if(ok) correct++;
+      box.querySelectorAll(".opt").forEach((x,xi)=>{ x.disabled=true; if(xi===q.a) x.classList.add("ok"); else if(xi===i) x.classList.add("ng"); });
+      const last = qi===m.qs.length-1;
+      document.getElementById("w").innerHTML = `<div class="why ${ok?"ok":"ng"}"><b>${ok?"正解":"おしい"}</b>${q.why}</div>
+        <div class="actions"><button class="btn primary" id="nx">${last?"結果を見る":"次の問題"}</button></div>`;
+      document.getElementById("nx").addEventListener("click",()=>{
+        if(last){ box.innerHTML=""; const miss=m.qs.length-correct; finish(m, miss===0?3:miss<=2?2:1, `${m.qs.length}問中 ${correct}問 正解`, ""); }
+        else { qi++; drawQ(); }
+      });
+    }));
+  }
+  drawQ();
+}
+
+function finish(m, stars, line, extra){
+  const prev=progress[m.id]||0; if(stars>prev){ progress[m.id]=stars; save(); }
+  document.getElementById("res").innerHTML = `<div class="result">
+    <div class="score"><div><div class="label" style="color:inherit;opacity:.7">MISSION CLEAR</div><div class="big">${line}</div></div><div class="stars">${starHTML(stars)}</div></div>
+    ${extra}
+    <div class="card"><h3>分解のポイント</h3><p>${m.point}</p></div>
+    <div class="card useful"><h3>これが役立つ場面</h3><ul>${m.useful.map(u=>`<li>${u}</li>`).join("")}</ul></div>
+    <div class="actions">
+      <button class="btn" id="retry">もう一度</button>
+      <button class="btn primary" id="doors2">入口の質問に答える</button>
+      <button class="btn" id="map2">ミッション一覧</button>
+    </div></div>`;
+  document.getElementById("retry").addEventListener("click",()=>startMission(m.id));
+  document.getElementById("doors2").addEventListener("click",()=>renderHome("doors"));
+  document.getElementById("map2").addEventListener("click",()=>renderHome("map"));
+  document.getElementById("res").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* 日本語の文節で折り返す：ひらがな→それ以外の境目と句読点のあとに改行位置を入れる */
+function seg(node){
+  const w=document.createTreeWalker(node,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement&&n.parentElement.closest("script,style,svg")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  const list=[]; while(w.nextNode()) list.push(w.currentNode);
+  for(const t of list){
+    const v=t.data.replace(/\u200B/g,"")
+      .replace(/([ぁ-ゖ])(?=[^ぁ-ゖー\s、。！？」』）・…\u200B])/g,"$1\u200B")
+      .replace(/([、。！？」』）・])(?=[^、。！？」』）\s])/g,"$1\u200B");
+    if(v!==t.data) t.data=v;
+  }
+}
+new MutationObserver(ms=>{ for(const m of ms) m.addedNodes.forEach(n=>{ if(n.nodeType===1) seg(n); else if(n.nodeType===3&&n.parentElement) seg(n.parentElement); }); })
+  .observe(document.getElementById("app"),{childList:true,subtree:true});
+seg(document.querySelector(".top"));
+
+renderHome();
+</script>
+</body>
+</html>

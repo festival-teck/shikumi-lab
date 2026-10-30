@@ -359,7 +359,8 @@ const FLOWS = {
     intro:"楽しさは気分だけで決まるものではなく、いくつかの部品が合わさってできている、と考えてみます。どの部品が足りていないかを、はい／いいえで確かめましょう。",
     parts:["エネルギー（体力・余裕）","新しさ（いつもと違うこと）","人（だれかといる時間）"],
     qs:[
-      {q:"前は楽しかったことが、最近あまり楽しく感じない", kind:"yn", opts:[{t:"はい"},{t:"いいえ",s:{small:2}}]},
+      {q:"前は楽しかったことが、最近あまり楽しく感じない", kind:"yn", opts:[{t:"はい",f:"less"},{t:"いいえ"}]},
+      {q:"前から、夢中になれることはあまりないほうだ", kind:"yn", opts:[{t:"はい",s:{small:2}},{t:"いいえ"}]},
       {q:"学校・宿題・習いごとなどで、1日の予定がほぼ埋まっている", kind:"yn", opts:[{t:"はい",s:{energy:2}},{t:"いいえ"}]},
       {q:"休みの日も、だいたい同じ過ごし方をしている", kind:"yn", opts:[{t:"はい",s:{change:2}},{t:"いいえ"}]},
       {q:"最近、だれかと一緒に何かをした時間が少ない", kind:"yn", opts:[{t:"はい",s:{people:2}},{t:"いいえ"}]},
@@ -370,7 +371,8 @@ const FLOWS = {
     resolve(st){
       const order=["energy","change","people","small"];
       let best=null,bv=0; for(const k of order){ if((st.s[k]||0)>bv){bv=st.s[k];best=k;} }
-      return best || "mild";
+      if(best) return best;
+      return st.flags.less ? "mild" : "good";
     },
     results:{
       energy:{name:"エネルギー切れかも", link:"like",
@@ -394,6 +396,13 @@ const FLOWS = {
               ["学校や地域のイベントに1回だけ参加する","続けるかどうかは、行ってから決めればいいです。"]],
         why:"同じものを見て「いいね」と言い合えると、ひとりで感じるより楽しさが大きくなりやすいです。たくさん話さなくても、「ちょっと分け合う」だけで十分です。",
         missions:["line","suki"]},
+      good:{name:"楽しさの部品は、そろっているみたい", links:["like","shikumi"],
+        desc:"今回の答えでは、エネルギー・新しさ・人のどの部品も大きく足りていないようです。今の過ごし方が、あなたに合っているのかもしれません。",
+        acts:[["今「楽しい」と感じていることを1つ書き出す","何が楽しいのかを部品に分けておくと、これから先、楽しくない時期が来たときのヒントになります。"],
+              ["その楽しさを、もう一歩ふかめてみる","調べる、だれかに話す、少しレベルを上げるなど、今ある楽しさを広げます。"],
+              ["ほかの入口の質問にも答えてみる","好きなことの中身や、身近なしくみを分解すると、新しい「気になる」が見つかるかもしれません。"]],
+        why:"楽しさがそろっているときは、新しく何かを足すより、今の楽しさの中身を知っておくのがおすすめです。自分がどの部品で楽しくなりやすいかがわかると、これからの選び方に使えます。",
+        missions:["suki"]},
       mild:{name:"大きく欠けている部品は見つからなかった",
         desc:"今回の質問では、特定の部品が大きく足りないという答えにはなりませんでした。理由がはっきりしない時期は、だれにでもあります。原因を探すより、小さな記録から始めてみましょう。",
         acts:[["1日1つ「ちょっとよかった」をメモする","1週間続けると、楽しさが戻ってきている部分に気づきやすくなります。"],
@@ -627,10 +636,11 @@ function startFlow(id){
   draw();
 }
 
+const LINKLABEL={like:"好きなことを探してみる →",shikumi:"身近なしくみを知ってみる →",tired:"楽しさの部品をチェックする →"};
 function showResult(id, f, st){
   const key=f.resolve(st); const r=f.results[key];
   let meter="";
-  if(f.meter && !r.care){
+  if(f.meter && !r.care && f.meter.some(([k])=>(st.s[k]||0)>0)){
     const max=f.max || Math.max(1,...f.meter.map(([k])=>st.s[k]||0));
     const top=Math.max(...f.meter.map(([k])=>st.s[k]||0));
     meter=`<div class="card"><h3>${f.meterLabel}</h3><div class="meter">
@@ -650,7 +660,7 @@ function showResult(id, f, st){
       ${meter}
       ${seeFirst? actsCard + missionCard : (id==="shikumi"? missionCard + actsCard : actsCard + missionCard)}
       <div class="card"><h3>なぜこれがおすすめ？</h3><p>${r.why}</p></div>
-      ${r.link?`<button class="btn primary" id="link">好きなことを探してみる →</button>`:""}
+      ${(r.links||(r.link?[r.link]:[])).map(l=>`<button class="btn primary" data-flowlink="${l}">${LINKLABEL[l]}</button>`).join("")}
       <div class="actions">
         <button class="btn" id="again">もう一度答える</button>
         <button class="btn" id="home">ほかの入口を見る</button>
@@ -660,7 +670,7 @@ function showResult(id, f, st){
   document.getElementById("back").addEventListener("click",()=>renderHome("doors"));
   document.getElementById("again").addEventListener("click",()=>startFlow(id));
   document.getElementById("home").addEventListener("click",()=>renderHome("doors"));
-  if(r.link) document.getElementById("link").addEventListener("click",()=>startFlow(r.link));
+  app.querySelectorAll("[data-flowlink]").forEach(b=>b.addEventListener("click",()=>startFlow(b.dataset.flowlink)));
   app.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>startMission(b.dataset.go)));
   window.scrollTo(0,0);
 }

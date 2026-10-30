@@ -239,6 +239,7 @@ p,li,.desc,.door span.s,.mrow small,.mbtn small,.scene,.why,.bh{text-wrap:pretty
 .mrow .stars{flex-shrink:0}
 .card p{line-height:1.85}
 .rhead h3{line-height:1.45}
+.label.eyebrow{font-size:15px;letter-spacing:.06em}
 </style>
 </head>
 <body>
@@ -463,20 +464,25 @@ const FLOWS = {
   },
 
   shikumi: {
-    door:"身近なしくみを知りたい", sub:"お店・ゲーム・学校・人間関係の裏側をのぞく", key:"d3", mark:"知",
-    title:"どのしくみを分解する？",
-    intro:"身近なことも、役割ごとに分けると「なぜそうなっているか」が見えてきます。気になるものを選んでください。",
-    parts:["お店とお金","ゲームとネット","学校と部活","友達づきあい","仕事と将来"],
+    door:"身近なしくみを知りたい", sub:"お店・アプリ・学校・人間関係の裏側をのぞく", key:"d3", mark:"知",
+    title:"気になっているしくみを見つける",
+    intro:"身近なことも、役割ごとに分けると「なぜそうなっているか」が見えてきます。はい／いいえで答えると、今いちばん気になっていそうなしくみと、その分け方をおすすめします。",
+    parts:["お店とお金","ネットとアプリ","学校と部活","友達づきあい","仕事と将来"],
     qs:[
-      {q:"いちばん気になるのは？", kind:"multi", opts:[
-        {t:"お店とお金：コンビニはなぜいつも商品がそろっている？",v:{topic:"shop"}},
-        {t:"ゲームとネット：無料のアプリはどうやって運営されている？",v:{topic:"net"}},
-        {t:"学校と部活：同じトラブルがなぜ毎年起きる？",v:{topic:"school"}},
-        {t:"友達づきあい：なぜ気持ちがモヤモヤする？",v:{topic:"friend"}},
-        {t:"仕事と将来：仕事って結局なにをしている？",v:{topic:"work"}}]},
+      {q:"お店で「なんでこの値段なんだろう？」と思ったことがある", kind:"yn", opts:[{t:"はい",s:{shop:2}},{t:"いいえ"}]},
+      {q:"無料のアプリや動画サイトが、どうやってお金をかせいでいるのか気になる", kind:"yn", opts:[{t:"はい",s:{net:2}},{t:"いいえ"}]},
+      {q:"クラスや部活で、毎回同じようなトラブルが起きると感じる", kind:"yn", opts:[{t:"はい",s:{school:2}},{t:"いいえ"}]},
+      {q:"友達の言葉や態度が、あとになって気になることがある", kind:"yn", opts:[{t:"はい",s:{friend:2}},{t:"いいえ"}]},
+      {q:"大人の仕事が、実際にどんなことをしているのかよくわからない", kind:"yn", opts:[{t:"はい",s:{work:2}},{t:"いいえ"}]},
+      {q:"どちらかといえば、気になるのは？", kind:"ab", opts:[{t:"お店やアプリなど、モノやお金のしくみ",s:{shop:1,net:1,work:1}},{t:"学校や友達など、人どうしのしくみ",s:{school:1,friend:1}}]},
       {q:"どっちのやり方が好き？", kind:"ab", opts:[{t:"まず練習問題で、答えと解説を見たい",v:{style:"learn"}},{t:"まず実際に外で見て確かめたい",v:{style:"see"}}]}
     ],
-    resolve(st){ return st.v.topic; },
+    meter:[["shop","お店とお金"],["net","ネットとアプリ"],["school","学校と部活"],["friend","友達づきあい"],["work","仕事と将来"]],
+    meterLabel:"気になっているしくみ（各3点満点）", max:3,
+    resolve(st){
+      const ks=["shop","net","school","friend","work"];
+      return [...ks].sort((a,b)=>(st.s[b]||0)-(st.s[a]||0))[0];
+    },
     results:{
       shop:{name:"お店とお金のしくみ",
         desc:"お店は「仕入れる」「売る」「整える」の3つの役割で回っています。この箱を知っていると、どんなお店でも同じように分解できます。",
@@ -485,7 +491,7 @@ const FLOWS = {
               ["店員さんが今どの役割の仕事をしているか考える","レジ、品出し、そうじ。3つの箱のどれかに入るはずです。"]],
         why:"お店のしくみがわかると、バイトや文化祭の出店で、自分の仕事が全体のどこにあたるかがわかるようになります。",
         missions:["konbini"]},
-      net:{name:"ゲームとネットのしくみ",
+      net:{name:"ネットとアプリのしくみ",
         desc:"無料のサービスは「人を集める」「続けてもらう」「お金になる」の3つで回っています。無料の部分は、人を集めるための入口です。",
         acts:[["よく使うアプリが何でお金を得ているか、3つ書き出す","課金、広告、会員プランなど。わからないものは調べてみます。"],
               ["広告が出るタイミングを数えてみる","どこで出るかを見ると、運営がどこでお金を得たいかがわかります。"],
@@ -531,8 +537,8 @@ function renderHome(scrollTo){
   app.innerHTML = `
   <section class="hero">
     <div>
-      <div class="label">答えて、分けて、次の一歩へ</div>
-      <h1>次にやること、<br><mark>ひとつ</mark>見つけよう。</h1>
+      <div class="label eyebrow">答えて、分けて、次の一歩へ</div>
+      <h1>次にやること、<br><mark>ひとつ</mark>見つけよう</h1>
       <p class="lead">入口を選んで、はい／いいえ・AかBで答えるだけ。あなたの答えを「部品」に分けて、今すぐできる小さな行動と、考え方の練習ミッションをおすすめします。</p>
     </div>
     <svg class="diagram" viewBox="0 0 320 230" role="img" aria-label="楽しさをエネルギー・新しさ・人の3つの部品に分けた分解図">
@@ -554,7 +560,7 @@ function renderHome(scrollTo){
   <section class="block" id="doors">
     <div class="label">入口を選ぶ</div>
     <h2>どれがいちばん近い？</h2>
-    <p class="sub">質問は2〜6問。1〜2分で終わります。</p>
+    <p class="sub">質問は5〜7問。1〜2分で終わります。</p>
     <div class="doors">
       ${Object.entries(FLOWS).map(([id,f])=>`
         <button class="door ${f.key}" data-flow="${id}">
